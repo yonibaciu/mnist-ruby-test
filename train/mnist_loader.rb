@@ -21,12 +21,11 @@ class MnistLoader
 
   def get_data_and_labels size
     load_data
-    # @data.shuffle!
     x_data, y_data = [], []
     
     @data.slice(0, size).each do |row|
       image = row[0].unpack('C*')
-      image = image.map {|v| normalize(v, 0, 256, 0, 1)}
+      image = image.map {|v| normalize(v, 0, 255, 0, 1)}
       x_data << image
       y_data << row[1]
     end

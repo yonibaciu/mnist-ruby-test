@@ -8,9 +8,11 @@
     body {
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
       font-size: 14px;
-      line-height: 1.428571429;
+      line-height: 1.5;
       color: #333;
       background-color: #fff;
+      max-width: 1000px;
+      margin: 0px auto;
     }
     canvas {
       cursor: pointer;
@@ -42,6 +44,23 @@
     #subhead {
       font-size: 16px;
     }
+
+    #results {
+      border: 1px solid gray;
+      border-collapse: collapse;
+    }
+    #results td {
+      border: 1px solid gray;
+      padding: 5px;
+    }
+    #results td.good-node {
+      background-color: green;
+      color: white;
+    }
+    #results td.maybe-node {
+      background-color: orange;
+      color: white;
+    }
     </style>
 </head>
 <body>
@@ -56,10 +75,7 @@
       <button id="clear">Clear</button>
     </div>
   
-
-    <p>This Sinatra app classifies via a neural network (ruby-fann) which I've pre-trained on the MNIST handwritten digits dataset. This network has one hidden layer of 300 neurons, and after training with all 60,000 training examples (which took ~22 minutes), I was able to correctly classify ~93% of the test set. You can see the training setup in the <a href="https://github.com/gbuesing/mnist-ruby-test">source code</a>.</p>
-
-    <p>Created by <a href="https://github.com/gbuesing">Geoff Buesing</a>.</p>
+    <p>Based on a Sinatra app written by <a href="https://github.com/gbuesing">Geoff Buesing</a>.</p>
 
   </div>
 
@@ -67,8 +83,23 @@
     <table id="results">
       <thead>
         <tr>
+          <td></td>
+          <td></td>
+          <td colspan="10">Output layer</tr>
+        </tr>
+        <tr>
           <td>Actual</td>
           <td>Predicted</td>
+          <td>0</td>
+          <td>1</td>
+          <td>2</td>
+          <td>3</td>
+          <td>4</td>
+          <td>5</td>
+          <td>6</td>
+          <td>7</td>
+          <td>8</td>
+          <td>9</td>
         </tr>
       </thead>
       <tbody>
@@ -82,9 +113,11 @@
   <script>
     var canvas = document.getElementById('canvas');
     var ctx = canvas.getContext("2d");
+    
     ctx.strokeStyle = "#000";
     ctx.lineWidth = 20;
     ctx.lineJoin = "round";
+    ctx.lineCap = "round";
     
     // https://software.intel.com/en-us/html5/articles/touch-drawing-app-using-html5-canvas
     $.fn.drawTouch = function() {
@@ -145,6 +178,16 @@
         var tr = $('<tr>')
         $('<td>').html(img).appendTo(tr);
         $('<td>').html(resp.predict).appendTo(tr);
+        for (var i = 0; i < 10; i += 1) {
+          var td = $('<td>').html(resp.output_later[i].toFixed(2));
+          if (resp.output_later[i] > 0.8) {
+            td.addClass('good-node');
+          }
+          else if (resp.output_later[i] > 0.4) {
+            td.addClass('maybe-node');
+          }
+          td.appendTo(tr);
+        }
         tr.prependTo('#results > tbody').hide().fadeIn();
       }, 'json');
     });

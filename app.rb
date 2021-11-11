@@ -4,9 +4,9 @@ require 'ruby-fann'
 require 'sinatra/base'
 require 'chunky_png'
 require 'json'
+require 'pry'
 
-$fann = RubyFann::Standard.new(:filename=>"./train/trained_nn_300_60000_7_crop.net")
-
+$fann = RubyFann::Standard.new(:filename=>"./train/data/trained_nn_24x24_300_60000_6.net")
 
 class DigitClassifierApp < Sinatra::Application
   get '/' do
@@ -15,21 +15,17 @@ class DigitClassifierApp < Sinatra::Application
 
   post '/predict' do
     canvas = ChunkyPNG::Canvas.from_data_url(params[:dataURL])
-    # canvas.save 'input.png'
-    canvas = center_and_downsample canvas
-    # canvas.save 'cropped.png'
-    random_cropped = 4.times.map { canvas.crop(rand(5), rand(5), 24, 24) }
-    predict_sums = Array.new(10, 0)
-    random_cropped.each do |cropped|
-      pixels = get_normalized_pixels cropped
-      predict = $fann.run pixels
-      predict.each_with_index {|val, i| predict_sums[i] += val}
-    end
-    {predict: decode_prediction(predict_sums), data_url: canvas.to_data_url}.to_json
+    canvas.save('input.png')
+    canvas = center_and_downsample(canvas)
+
+    pixels = get_normalized_pixels(canvas)
+    predict = $fann.run(pixels)
+
+    {predict: decode_prediction(predict), output_later: predict, data_url: canvas.to_data_url}.to_json
   end
 
   private
-    def center_and_downsample canvas
+    def center_and_downsample(canvas)
       canvas.trim!
       size = [canvas.width, canvas.height].max
       square = ChunkyPNG::Canvas.new(size, size, ChunkyPNG::Color::TRANSPARENT)
@@ -41,7 +37,7 @@ class DigitClassifierApp < Sinatra::Application
       square
     end
 
-    def get_normalized_pixels canvas
+    def get_normalized_pixels(canvas)
       normalize = -> (val, fromLow, fromHigh, toLow, toHigh) {  (val - fromLow) * (toHigh - toLow) / (fromHigh - fromLow).to_f }
 
       pixels = []
@@ -54,7 +50,7 @@ class DigitClassifierApp < Sinatra::Application
       pixels
     end
 
-    def decode_prediction result
+    def decode_prediction(result)
       (0..9).max_by {|i| result[i]}
     end
 
