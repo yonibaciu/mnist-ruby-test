@@ -6,7 +6,7 @@ require 'chunky_png'
 require 'json'
 require 'pry'
 
-$fann = RubyFann::Standard.new(:filename=>"./train/data/trained_nn_24x24_300_60000_6.net")
+$fann = RubyFann::Standard.new(:filename=>"./train/data/trained_nn_24x24_300_60000_7.net")
 
 class DigitClassifierApp < Sinatra::Application
   get '/' do

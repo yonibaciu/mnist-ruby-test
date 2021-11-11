@@ -1,4 +1,5 @@
 require 'zlib'
+require './cropper'
 
 class MnistLoader
 
@@ -29,6 +30,8 @@ class MnistLoader
       x_data << image
       y_data << row[1]
     end
+
+    x_data.map! {|row| Cropper.new(row).random_square_crop(24).to_a.flatten }
 
     [x_data, y_data]
   end
